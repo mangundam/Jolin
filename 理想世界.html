@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禮運：世道守門人 - Anime Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap');
+
+        :root {
+            --datong: #D4AF37;   /* 黃金盛世 */
+            --xiaokang: #4A90E2; /* 秩序藍 */
+            --chaos: #E74C3C;    /* 混亂紅 */
+            --bg-dark: #121212;
+            --panel: rgba(30, 30, 30, 0.95);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-dark);
+            color: #eee;
+            overflow: hidden;
+        }
+
+        /* 遊戲大容器 */
+        #master-container {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle, #2c3e50 0%, #000 100%);
+        }
+
+        /* --- 進入畫面 --- */
+        #start-screen {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1528164344705-47542687990d?auto=format&fit=crop&q=80&w=1000') center/cover;
+            z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s;
+        }
+
+        .title-box {
+            text-align: center; border: 4px solid var(--datong);
+            padding: 40px 60px; background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 30px var(--datong);
+        }
+        .title-box h1 { font-family: 'Noto Serif TC', serif; font-size: 4rem; margin: 0; color: var(--datong); letter-spacing: 10px; }
+        .title-box p { font-size: 1.5rem; letter-spacing: 2px; }
+
+        .start-btn {
+            margin-top: 50px; padding: 15px 50px; font-size: 1.8rem;
+            background: var(--datong); border: none; color: black; font-weight: bold;
+            cursor: pointer; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+        }
+        .start-btn:hover { transform: scale(1.1); background: #fff; }
+
+        /* --- 遊戲主體 --- */
+        #game-interface {
+            display: none; width: 1000px; height: 750px;
+            background: var(--panel); border: 2px solid #444;
+            flex-direction: column; position: relative; box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+
+        /* 頂部資訊 */
+        .game-header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #555; background: #000;
+        }
+        .round-info { font-size: 1.5rem; font-weight: bold; color: var(--datong); }
+        .score-info { font-size: 1.2rem; }
+
+        /* 角色立繪區 (日系風格重點) */
+        .character-stage {
+            flex-grow: 1; display: flex; position: relative; padding: 40px;
+            background: linear-gradient(to bottom, #1a1a1a, #333);
+        }
+
+        .portrait-container {
+            flex: 1; display: flex; justify-content: center; align-items: flex-end;
+            position: relative; overflow: hidden;
+        }
+        /* 模擬動漫立繪特效 */
+        .anime-portrait {
+            font-size: 12rem; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+            animation: float 3s infinite ease-in-out;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        /* 對話框 (Visual Novel 風格) */
+        .dialogue-panel {
+            flex: 1.5; display: flex; flex-direction: column; justify-content: center; padding: 20px;
+        }
+        .char-name-tag {
+            background: var(--datong); color: black; padding: 5px 20px;
+            font-size: 1.8rem; font-weight: bold; display: inline-block; width: fit-content;
+            margin-bottom: 15px;
+        }
+        .char-speech-text {
+            font-size: 2rem; line-height: 1.6; color: white; text-shadow: 2px 2px 4px #000;
+        }
+
+        /* 分類按鈕 */
+        .action-bar {
+            display: flex; gap: 15px; padding: 30px; background: #111;
+        }
+        .action-btn {
+            flex: 1; padding: 20px; font-size: 1.6rem; font-weight: bold; cursor: pointer;
+            border: 2px solid transparent; transition: 0.3s; font-family: 'Noto Serif TC';
+        }
+        .btn-dt { background: #222; color: var(--datong); border-color: var(--datong); }
+        .btn-xk { background: #222; color: var(--xiaokang); border-color: var(--xiaokang); }
+        .btn-ch { background: #222; color: var(--chaos); border-color: var(--chaos); }
+        .action-btn:hover { background: white; color: black; transform: translateY(-5px); }
+
+        /* 詳解彈窗 */
+        #overlay {
+            display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 500; flex-direction: column; justify-content: center; align-items: center; padding: 60px;
+        }
+        .result-head { font-size: 3rem; margin-bottom: 20px; }
+        .quote-card {
+            background: #222; border-left: 8px solid var(--datong); padding: 30px;
+            margin: 20px 0; width: 80%;
+        }
+        #exp-quote { font-size: 2.2rem; color: #ffd700; line-height: 1.4; }
+        #exp-detail { font-size: 1.6rem; color: #ccc; margin-top: 20px; }
+        .next-btn { margin-top: 40px; padding: 15px 60px; font-size: 1.5rem; cursor: pointer; }
+
+        /* 字體大字號調整 */
+        h2 { font-size: 2.5rem; }
+    </style>
+</head>
+<body>
+
+<div id="master-container">
+    <div id="start-screen">
+        <div class="title-box">
+            <h1>禮運．世道編年</h1>
+            <p>大道之行，究竟通往何方？</p>
+        </div>
+        <div style="max-width: 700px; text-align: center; margin-top: 30px; font-size: 1.4rem; line-height: 1.8; background: rgba(0,0,0,0.5); padding: 20px;">
+            「昔者，仲尼參與魯國之祭，事畢喟然而歎...」<br>
+            時代的巨輪正在轉動，你是孔子身旁的引路人。<br>
+            請觀察前來投靠的萬民，判斷他們的心志，將其導向正確的世界。
+        </div>
+        <button class="start-btn" onclick="startGame()">進入遊戲</button>
+    </div>
+
+    <div id="game-interface">
+        <div class="game-header">
+            <div class="round-info" id="round-idx">ROUND 1 / 10</div>
+            <div class="score-info">同步率：<span id="score-val" style="color:var(--datong)">0</span> %</div>
+        </div>
+
+        <div class="character-stage">
+            <div class="portrait-container">
+                <div class="anime-portrait" id="char-icon">👨‍🌾</div>
+            </div>
+            <div class="dialogue-panel">
+                <div class="char-name-tag" id="char-name">角色姓名</div>
+                <div class="char-speech-text" id="char-speech">「這裡是對話內容...」</div>
+            </div>
+
+            <div id="overlay">
+                <div class="result-head" id="exp-status">判定成功</div>
+                <div class="quote-card">
+                    <div id="exp-quote">「大道之行也，天下為公。」</div>
+                </div>
+                <div id="exp-detail">這裡是對應原文的深度解析內容。</div>
+                <button class="next-btn" onclick="nextCharacter()">確認，下一位 ➔</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="action-btn btn-dt" onclick="classify('大同')">大同世界<br><small>THE GREAT UNITY</small></button>
+            <button class="action-btn btn-xk" onclick="classify('小康')">小康社會<br><small>MODEST PROSPERITY</small></button>
+            <button class="action-btn btn-ch" onclick="classify('亂世')">私慾亂世<br><small>THE CHAOS</small></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const citizens = [
+        { name: "老農 伯益", icon: "🌾", speech: "既然有力氣，我就多耕幾畝地。這糧食分給村裡沒飯吃的人，我不必留給自己。", correct: "大同", quote: "力惡其不出於身也，不必為己。", detail: "這是大同社會的核心：人人樂於付出體力，而不以此謀求私利。" },
+        { name: "士大夫 季康", icon: "📜", speech: "規矩不能廢！我身為大人，這爵位傳給我兒子是天經地義的。我們家祭祀從不馬虎。", correct: "小康", quote: "大人世及以為禮，城郭溝池以為固。", detail: "進入天下為家後，世襲制度(世及)與家族防禦成了小康社會的常態。" },
+        { name: "城防衛隊", icon: "🛡️", speech: "挖深護城河，建高城牆！這亂世裡，只有守住自家的財產和土地，才是最穩妥的。", correct: "小康", quote: "城郭溝池以為固，禮義以為紀。", detail: "小康社會以物理的城防與心理的禮法來維持私有制的秩序。" },
+        { name: "寡婦 寧嫂", icon: "👩", speech: "自從丈夫走後，鄰里間就像親兄弟一樣照顧我。這孩子不是他們生的，他們卻當親生的養。", correct: "大同", quote: "不獨親其親，不獨子其子...矜寡孤獨者皆有所養。", detail: "打破血緣限制的愛，使老弱婦孺皆能安身立命。" },
+        { name: "奸客 梟首", icon: "⚔️", speech: "兵荒馬亂正是發財的好機會！禮義能吃嗎？誰擋我的財路，我的刀就不認人。", correct: "亂世", quote: "故謀用是作，而兵由此起。", detail: "大道既隱且禮義不存，人們純粹為了私慾爭鬥，這便是亂世之源。" },
+        { name: "選賢官 李言", icon: "🎓", speech: "我們挑選人才不看背景，只要他有才幹、講信用，能與人和睦相處，就是我們要找的人。", correct: "大同", quote: "選賢與能，講信修睦。", detail: "大同世界強調公平選拔人才，建立誠信與和睦的社會關係。" },
+        { name: "織女 青娘", icon: "🧵", speech: "我有這門手藝，不拿去賣錢，看誰家沒衣穿就給誰。大家都是天下的主人，不用分你我。", correct: "大同", quote: "貨惡其棄於地也，不必藏於己。", detail: "珍惜資源並願意與眾人共享，不視財貨為私人囊中物。" },
+        { name: "官吏 嚴法", icon: "🖋️", speech: "如果不按禮節來，不管是誰都要罷黜。我們要用法度考驗人們的誠信，警惕大家別犯錯。", correct: "小康", quote: "以著其義，以考其信，著有過，刑仁講讓。", detail: "小康社會通過禮儀法度來規範行為，並建立明確的賞罰機制。" },
+        { name: "權商 吳老闆", icon: "💰", speech: "我雇人蓋這大房子就是為了光宗耀祖，讓大家看看我多有本事。別人家的田，我想辦法弄過來也是我的本事。", correct: "亂世", quote: "以功為己。故謀用是作。", detail: "雖然口中談功業，但其心態是掠奪式的私慾，最終導致謀略與混亂。" },
+        { name: "工匠 魯伯", icon: "🔨", speech: "我蓋房子的時候總在想，這房子得符合禮制，讓尊卑有序，這社會才能安定得下來。", correct: "小康", quote: "以設制度，以立田里，以和夫婦。", detail: "透過物質空間與社會制度的配合，建立穩定的家庭與社會秩序。" }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+
+    function startGame() {
+        document.getElementById('start-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'flex';
+            loadCharacter();
+        }, 1000);
+    }
+
+    function loadCharacter() {
+        if (currentIndex >= citizens.length) {
+            showFinalResult();
+            return;
+        }
+        const c = citizens[currentIndex];
+        document.getElementById('round-idx').innerText = `ROUND ${currentIndex + 1} / 10`;
+        document.getElementById('char-name').innerText = c.name;
+        document.getElementById('char-icon').innerText = c.icon;
+        document.getElementById('char-speech').innerText = `「${c.speech}」`;
+    }
+
+    function classify(choice) {
+        const c = citizens[currentIndex];
+        const isCorrect = choice === c.correct;
+        
+        if (isCorrect) score++;
+
+        document.getElementById('score-val').innerText = Math.round((score / (currentIndex + 1)) * 100);
+        document.getElementById('exp-status').innerText = isCorrect ? "判定成功 ⭕" : "判定偏差 ❌";
+        document.getElementById('exp-status').style.color = isCorrect ? "var(--datong)" : "var(--chaos)";
+        document.getElementById('exp-quote').innerText = `「${c.quote}」`;
+        document.getElementById('exp-detail').innerText = c.detail;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function nextCharacter() {
+        document.getElementById('overlay').style.display = 'none';
+        currentIndex++;
+        loadCharacter();
+    }
+
+    function showFinalResult() {
+        const container = document.getElementById('game-interface');
+        let rank = score >= 9 ? "【大同之道】仲尼傳人" : (score >= 6 ? "【小康之禮】世間良臣" : "【亂世餘火】初出茅廬");
+        container.innerHTML = `
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center; background:#000;">
+                <h1 style="font-size:4rem; color:var(--datong);">${rank}</h1>
+                <p style="font-size:2rem;">審核正確率：${score * 10}%</p>
+                <button class="start-btn" onclick="location.reload()">重新遊歷</button>
+            </div>`;
+    }
+</script>
+</body>
+</html>
