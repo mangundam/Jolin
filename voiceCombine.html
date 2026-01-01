@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聽力測驗自動剪輯工具 - 即時預估版</title>
+    <style>
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+        .setting-group { 
+            margin: 20px 0; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .input-item { display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 5px; color: #555; }
+        input[type="number"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        input[type="file"] { margin: 15px 0; }
+        #file-list { margin-top: 10px; border: 1px solid #eee; padding: 10px; max-height: 150px; overflow-y: auto; background: #fafafa; font-size: 0.85em; }
+        .status-card { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: #e7f3ff; 
+            border-left: 5px solid #1a73e8;
+            border-radius: 4px;
+        }
+        .status-val { font-size: 1.2em; font-weight: bold; color: #1a73e8; }
+        button { 
+            width: 100%; margin-top: 20px; background: #1a73e8; color: white; border: none; 
+            padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1.1em; font-weight: bold; transition: 0.3s;
+        }
+        button:hover { background: #1557b0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { display: none; color: #666; font-style: italic; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎧 聽力測驗自動合成工具</h2>
+    <p>步驟：1. 上傳題項音檔 2. 設定參數 3. 下載合併檔</p>
+
+    <input type="file" id="audioFiles" multiple accept=".wav,.mp3">
+    <div id="file-list">尚未選擇檔案...</div>
+
+    <div class="setting-group">
+        <div class="input-item">
+            <label for="repeatCount">每題重複次數</label>
+            <input type="number" id="repeatCount" value="2" min="1">
+        </div>
+        <div class="input-item">
+            <label for="gapTime">題間間隔 (秒)</label>
+            <input type="number" id="gapTime" value="5" min="0" step="0.5">
+        </div>
+    </div>
+
+    <div class="status-card">
+        <div>總題目數：<span id="totalQs" class="status-val">0</span> 題</div>
+        <div style="margin-top: 10px;">
+            預估合成總長度：<span id="estimatedDuration" class="status-val">0:00</span>
+            <span id="calcLoading" class="loading">(重新計算中...)</span>
+        </div>
+    </div>
+
+    <button id="processBtn" disabled>開始合成並下載 WAV 檔案</button>
+</div>
+
+<script>
+    const fileInput = document.getElementById('audioFiles');
+    const repeatInput = document.getElementById('repeatCount');
+    const gapInput = document.getElementById('gapTime');
+    const processBtn = document.getElementById('processBtn');
+    const durationDisplay = document.getElementById('estimatedDuration');
+    const calcLoading = document.getElementById('calcLoading');
+    
+    let audioFiles = [];
+    let decodedBuffers = []; // 快取已解碼的音訊資料，避免重複運算
+
+    // 格式化秒數為 mm:ss
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.round(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // 更新預估時間的核心函式
+    async function updateEstimation() {
+        if (decodedBuffers.length === 0) {
+            durationDisplay.innerText = "0:00";
+            return;
+        }
+
+        calcLoading.style.display = "inline";
+        
+        const repeats = parseInt(repeatInput.value) || 1;
+        const gap = parseFloat(gapInput.value) || 0;
+        
+        let totalSeconds = 0;
+        decodedBuffers.forEach(buffer => {
+            totalSeconds += (buffer.duration * repeats) + gap;
+        });
+
+        // 扣掉最後一題後面的多餘間隔（可選）
+        if (totalSeconds > gap) totalSeconds -= gap;
+
+        durationDisplay.innerText = formatTime(totalSeconds);
+        calcLoading.style.display = "none";
+    }
+
+    // 監聽檔案上傳並解碼
+    fileInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files).sort((a, b) => {
+            return parseInt(a.name) - parseInt(b.name);
+        });
+
+        if (files.length === 0) return;
+
+        audioFiles = files;
+        document.getElementById('file-list').innerHTML = audioFiles.map(f => `<div>✅ ${f.name}</div>`).join('');
+        document.getElementById('totalQs').innerText = audioFiles.length;
+        
+        processBtn.disabled = true;
+        processBtn.innerText = "正在讀取音檔...";
+        
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        decodedBuffers = [];
+
+        // 一次性讀取並解碼所有音檔
+        for (let file of audioFiles) {
+            const arrayBuffer = await file.arrayBuffer();
+            try {
+                const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+                decodedBuffers.push(buffer);
+            } catch (err) {
+                console.error("解碼失敗:", file.name);
+            }
+        }
+        
+        audioCtx.close();
+        processBtn.disabled = false;
+        processBtn.innerText = "開始合成並下載 WAV 檔案";
+        updateEstimation();
+    });
+
+    // 監聽輸入欄位，隨時更新預估時間
+    [repeatInput, gapInput].forEach(input => {
+        input.addEventListener('input', updateEstimation);
+    });
+
+    // 合併與下載邏輯
+    processBtn.onclick = async () => {
+        if (decodedBuffers.length === 0) return;
+
+        processBtn.disabled = true;
+        processBtn.innerText = "處理中，請稍候...";
+        
+        const repeats = parseInt(repeatInput.value);
+        const gap = parseFloat(gapInput.value);
+        const sampleRate = decodedBuffers[0].sampleRate;
+        
+        let totalSamples = 0;
+        decodedBuffers.forEach(buf => {
+            totalSamples += (buf.length * repeats) + (gap * sampleRate);
+        });
+
+        const offlineCtx = new OfflineAudioContext(
+            decodedBuffers[0].numberOfChannels,
+            totalSamples,
+            sampleRate
+        );
+
+        let currentTime = 0;
+        decodedBuffers.forEach(buf => {
+            for (let i = 0; i < repeats; i++) {
+                const source = offlineCtx.createBufferSource();
+                source.buffer = buf;
+                source.connect(offlineCtx.destination);
+                source.start(currentTime);
+                currentTime += buf.duration;
+            }
+            currentTime += gap;
+        });
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        const wavBlob = bufferToWav(renderedBuffer);
+        const url = URL.createObjectURL(wavBlob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `聽力測驗_${new Date().getTime()}.wav`;
+        a.click();
+
+        processBtn.disabled = false;
+        processBtn.innerText = "開始合成並下載 WAV 檔案";
+    };
+
+    // WAV 轉換工具
+    function bufferToWav(abuffer) {
+        let numOfChan = abuffer.numberOfChannels,
+            length = abuffer.length * numOfChan * 2 + 44,
+            buffer = new ArrayBuffer(length),
+            view = new DataView(buffer),
+            channels = [], i, sample, offset = 0, pos = 0;
+
+        const setUint16 = data => { view.setUint16(pos, data, true); pos += 2; };
+        const setUint32 = data => { view.setUint32(pos, data, true); pos += 4; };
+
+        setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+        setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+        setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+        setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+
+        for(i=0; i<numOfChan; i++) channels.push(abuffer.getChannelData(i));
+        while(pos < length) {
+            for(i=0; i<numOfChan; i++) {
+                sample = Math.max(-1, Math.min(1, channels[i][offset])); 
+                sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
+                view.setInt16(pos, sample, true);
+                pos += 2;
+            }
+            offset++;
+        }
+        return new Blob([buffer], {type: "audio/wav"});
+    }
+</script>
+
+</body>
+</html>
