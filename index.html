@@ -3,423 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>射鵰英雄傳：智鬥書生 RPG 挑戰 (生命值版)</title>
+    <title>數位教學資源索引</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
-
         :root {
-            --bg-color: #f4e4bc; /* 宣紙色 */
-            --text-color: #2c2c2c; /* 墨色 */
-            --accent-color: #8b0000; /* 朱紅印泥色 */
-            --highlight-color: #d4a017; /* 金色 */
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
         }
 
         body {
-            font-family: 'Noto Serif TC', serif;
-            background-color: #2c2c2c;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        #game-container {
-            width: 100%;
-            max-width: 600px;
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             background-color: var(--bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            border: 2px solid #5c4033;
-            min-height: 80vh;
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 40px; }
+
+        /* 網格佈局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
 
-        #game-container::before {
-            content: "";
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            border: 1px solid #5c4033;
-            pointer-events: none;
-        }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
-        h1, h2 {
-            text-align: center;
-            color: var(--text-color);
-            margin-bottom: 10px;
-        }
-
-        .screen {
-            display: none;
-            flex-direction: column;
+        /* 縮圖區域 */
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            background: #e2e8f0;
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            padding: 20px;
-            animation: fadeIn 0.5s;
-        }
-
-        .screen.active {
-            display: flex;
-        }
-
-        .story-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 20px;
-            text-align: justify;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .poem-box {
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-            color: #5c4033;
-            white-space: pre-line;
-        }
-
-        .options-grid {
-            display: grid;
-            gap: 15px;
-            width: 100%;
-        }
-
-        button {
-            background-color: #fff;
-            border: 2px solid var(--text-color);
-            color: var(--text-color);
-            padding: 15px;
-            font-family: 'Noto Serif TC', serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 5px;
-            text-align: left;
             position: relative;
-            overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
 
-        button:hover:not(:disabled) {
-            background-color: var(--text-color);
-            color: var(--bg-color);
+        .thumbnail::after {
+            content: "📄";
+            font-size: 50px;
+            opacity: 0.3;
         }
 
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.8;
+        /* 資訊區域 */
+        .content { padding: 20px; text-align: center; flex-grow: 1; }
+        .content h3 { margin: 0 0 15px 0; font-size: 1.25rem; word-break: break-all; }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            background: #f1f5f9;
         }
 
-        button.start-btn, button.restart-btn {
-            background-color: var(--accent-color);
+        .btn-link {
+            display: block;
+            padding: 12px;
+            background: var(--primary-color);
             color: white;
-            border: none;
-            text-align: center;
-            font-size: 1.2rem;
-            margin-top: 20px;
-            width: 100%;
-        }
-        
-        button.start-btn:hover, button.restart-btn:hover {
-            background-color: #a00000;
-        }
-
-        /* 生命值顯示區 */
-        .status-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 0 5px;
+            text-decoration: none;
             font-weight: bold;
-            color: var(--accent-color);
+            transition: background 0.2s;
         }
 
-        .lives {
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-        }
+        .btn-link:hover { background: #1d4ed8; }
 
-        .progress-bar {
-            width: 100%;
-            height: 5px;
-            background: #ddd;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-color);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .feedback {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .feedback.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .feedback.fail {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            margin-bottom: 10px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ending-img {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
+        /* 載入中動畫 */
+        #loader { text-align: center; font-size: 1.2rem; padding: 50px; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="start-screen" class="screen active">
-        <h1>射鵰英雄傳<br>智鬥書生</h1>
-        <div style="text-align: center; font-size: 3rem; margin: 20px 0;">📜</div>
-        <p class="story-text">
-            這是通往「一燈大師」隱居地的最後一關。<br><br>
-            你化身為<b>黃蓉</b>，必須破解書生<b>朱子柳</b>的難題。<br><br>
-            <b>規則：</b>
-            <br>1. 共四個關卡。
-            <br>2. 你有 <b>3 顆愛心 (❤️❤️❤️)</b>。
-            <br>3. 每答錯一次扣一顆心，扣完即失敗。
-        </p>
-        <button class="start-btn" onclick="startGame()">開始闖關</button>
-    </div>
-
-    <div id="game-screen" class="screen">
-        <div class="status-bar">
-            <span id="level-indicator">關卡 1/4</span>
-            <span class="lives" id="lives-display">❤️❤️❤️</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress"></div>
-        </div>
-        
-        <h2 id="level-title">題目標題</h2>
-        <div id="story-content" class="story-text">
-            </div>
-        
-        <div id="fail-feedback-area"></div>
-
-        <div id="options-container" class="options-grid">
-            </div>
-        
-        <div id="success-feedback-area"></div>
-    </div>
-
-    <div id="game-over-screen" class="screen">
-        <div class="ending-img">🥀</div>
-        <h2>闖關失敗</h2>
-        <p class="story-text" style="text-align: center; color: #8b0000;">
-            你的氣力已盡...<br>
-            在書生的層層刁難下，你們無法繼續前行。
-        </p>
-        <button class="restart-btn" onclick="location.reload()">重新挑戰</button>
-    </div>
-
-    <div id="victory-screen" class="screen">
-        <div class="ending-img">💮</div>
-        <h2>通關成功！</h2>
-        <p class="story-text">
-            書生朱子柳大笑三聲：<br>
-            「佩服！佩服！在下甘拜下風！」<br><br>
-            恭喜你！憑藉著機智與國學底蘊，成功讓郭靖與黃蓉見到了一燈大師！
-        </p>
-        <button class="restart-btn" onclick="location.reload()">再玩一次</button>
-    </div>
+<div class="container">
+    <h1>校園教學網頁導覽</h1>
+    <div id="loader">正在讀取檔案清單...</div>
+    <div class="grid" id="main-grid"></div>
 </div>
 
 <script>
-    // 遊戲資料庫
-    const questions = [
-        {
-            title: "第一關：狹路相逢",
-            content: "【場景：山頂石橋】<br>受傷的你被郭靖哥哥背著爬上了山頂，唯一的石橋卻被一個書生擋住。他正在讀書，對你們視若無睹。為了救命，你必須讓他「開口」。<br>你該怎麼說？",
-            options: [
-                { text: "喂！那個讀書人，快點讓路！人命關天啊！", correct: false, reason: "書生最討厭粗魯之人，他皺了皺眉頭，不為所動。（請再試一次）" },
-                { text: "嘆道：「《論語》云：『有朋自遠方來，不亦樂乎？』這人讀聖賢書，卻不懂這道理。」", correct: true, feedback: "書生驚訝於你的文采，終於抬起頭來正眼看你們。" },
-                { text: "直接運用輕功跳過他頭頂。", correct: false, reason: "書生武功深不可測，你剛起步就被他的氣場逼退。（請再試一次）" },
-                { text: "跪下來求他發發慈悲。", correct: false, reason: "書生高傲，對苦肉計無動於衷，完全不理會。（請再試一次）" }
-            ]
-        },
-        {
-            title: "第二關：身世之謎",
-            content: "【場景：詩詞析字】<br>書生吟了一首詩，要你猜四個字，說出他的身世：<br><div class='poem-box'>「六經蘊藉胸中久，一劍十年磨在手，<br>杏花頭上一枝橫，恐洩天機莫露口。<br>一點累累大如斗，卻掩半牀無所有。<br>完名直待掛冠歸，本來面目君知否？」</div><br>你運用「析字（拆字）」技巧，得出的答案是？",
-            options: [
-                { text: "辛未狀元", correct: true, feedback: "正確！<br>「六」、「一」、「十」暗示六+一+十=<b>辛</b>；<br>「杏花」頭上加一，「莫露口」減去口=<b>未</b>；<br>「半邊牀」，牀的一半，加上「大」=<b>狀</b>；<br>「完」去冠(宀)=<b>元</b>。<br>你道破了他當年高中狀元的榮耀！" },
-                { text: "甲子探花", correct: false, reason: "年份與名次似乎不對，書生冷笑一聲。（請再試一次）" },
-                { text: "乙丑榜眼", correct: false, reason: "悟性不夠，書生不願讓路。（請再試一次）" },
-                { text: "丙寅進士", correct: false, reason: "雖然都是讀書人的頭銜，但這不是謎底。（請再試一次）" }
-            ]
-        },
-        {
-            title: "第三關：就地取材",
-            content: "【場景：指物起興】<br>身分被識破，書生指著路旁隨風搖擺的棕櫚樹，出了一道上聯：<br><br><div class='poem-box'>「風擺棕櫚，千手佛搖折疊扇。」</div><br>（暗示：棕櫚葉像千手佛的手，也像摺疊扇）。<br>你看向池塘，看到了枯萎的荷葉，靈機一動，對出的下聯是？",
-            options: [
-                { text: "霜凋荷葉，獨腳鬼戴逍遙巾。", correct: true, feedback: "妙哉！<br>「獨腳鬼」對「千手佛」，<br>「霜凋」對「風擺」，<br>對仗工整且意境相合，書生大吃一驚！" },
-                { text: "雲飄藍天，萬條龍舞碧玉鞭。", correct: false, reason: "意境雖好，但對仗不夠精準（萬條龍對不上千手佛的形象），書生搖頭不語。" },
-                { text: "雨打浮萍，癩蛤蟆想吃天鵝肉。", correct: false, reason: "太俗氣了！書生大怒，覺得你汙辱斯文。（生命 -1）" },
-                { text: "這太簡單了，我不屑對。", correct: false, reason: "避而不答就是認輸，書生不再理會你們。（生命 -1）" }
-            ]
-        },
-        {
-            title: "第四關：千古絕對",
-            content: "【場景：最後刁難】<br>書生拿出壓箱底的絕招，這是一個拆字對聯，上聯是：<br><br><div class='poem-box'>「琴瑟琵琶，八大王一般頭面。」</div><br>（註：琴瑟琵琶四字上面共有八個「王」字）。<br><br>你想到一路上的「漁樵耕讀」四個護衛處處阻攔，決定用這下聯來反擊：",
-            options: [
-                { text: "江河湖海，四點水波濤洶湧。", correct: false, reason: "雖然都有水字旁，但「四點水」對不上「八大王」的氣勢，且沒有諷刺之意。" },
-                { text: "魑魅魍魎，四小鬼各自肚腸。", correct: true, feedback: "絕妙好辭！<br>「魑魅魍魎」四字都有「鬼」字邊，對應「四小鬼」；<br>「各自肚腸」暗諷他們四人各有心思阻攔。<br>書生被罵得啞口無言，徹底折服！" },
-                { text: "詩詞歌賦，四才子各顯神通。", correct: false, reason: "這是在稱讚他們，不符合黃蓉此時想罵人的心情，且對仗不如「鬼」字工整。" },
-                { text: "東西南北，四方神守護家園。", correct: false, reason: "太過平鋪直敘，無法展現黃蓉的機鋒。（請再試一次）" }
-            ]
+    // === 設定區 ===
+    const CONFIG = {
+        username: 'mangundam', // 例如: 'myname'
+        repo: 'Jolin',     // 例如: 'it-course'
+        folder: ''        // HTML 存放的資料夾名稱 (若在根目錄則設為 '')
+    };
+
+    const grid = document.getElementById('main-grid');
+    const loader = document.getElementById('loader');
+
+    async function init() {
+        try {
+            // 1. 呼叫 GitHub API 取得檔案清單
+            const apiUrl = `https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.folder}`;
+            const response = await fetch(apiUrl);
+            const files = await response.json();
+
+            if (!Array.isArray(files)) throw new Error('無法讀取資料，請檢查設定');
+
+            loader.style.display = 'none';
+
+            // 2. 過濾出 HTML 檔案
+            const htmlFiles = files.filter(f => f.name.endsWith('.html') && f.name !== 'index.html');
+
+            htmlFiles.forEach((file, index) => {
+                createCard(file, index);
+            });
+
+        } catch (error) {
+            loader.innerHTML = `讀取失敗: ${error.message}<br>請確認 Repo 是否為公開(Public)。`;
         }
-    ];
-
-    let currentLevel = 0;
-    let lives = 3;
-
-    function startGame() {
-        document.getElementById('start-screen').classList.remove('active');
-        document.getElementById('game-screen').classList.add('active');
-        lives = 3;
-        updateLivesDisplay();
-        loadLevel(0);
     }
 
-    function updateLivesDisplay() {
-        let heartString = "";
-        for(let i=0; i<lives; i++) {
-            heartString += "❤️";
-        }
-        // 用空心愛心補齊位置，避免版面跳動（非必要，但好看）
-        for(let i=lives; i<3; i++) {
-            heartString += "🖤"; 
-        }
-        document.getElementById('lives-display').innerText = heartString;
-    }
-
-    function loadLevel(index) {
-        currentLevel = index;
-        const data = questions[index];
+    function createCard(file, index) {
+        // 去除副檔名作為標題
+        const title = file.name.replace('.html', '');
         
-        // 更新進度與標題
-        document.getElementById('level-indicator').innerText = `關卡 ${index + 1}/${questions.length}`;
-        const progressPercent = ((index) / questions.length) * 100;
-        document.getElementById('progress').style.width = progressPercent + '%';
+        // 取得該 HTML 的 GitHub Pages 絕對位址
+        const baseUrl = `https://${CONFIG.username}.github.io/${CONFIG.repo}/`;
+        const fileUrl = baseUrl + (CONFIG.folder ? CONFIG.folder + '/' : '') + file.name;
 
-        // 更新內容
-        document.getElementById('level-title').innerText = data.title;
-        document.getElementById('story-content').innerHTML = data.content;
-        
-        // 清空顯示區
-        const optionsContainer = document.getElementById('options-container');
-        optionsContainer.innerHTML = '';
-        document.getElementById('fail-feedback-area').innerHTML = ''; 
-        document.getElementById('success-feedback-area').innerHTML = '';
+        const cardId = `qr-${index}`;
 
-        data.options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerHTML = opt.text; 
-            btn.onclick = () => handleAnswer(opt, btn);
-            optionsContainer.appendChild(btn);
+        // 建立卡片元件
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="thumbnail" id="thumb-${index}"></div>
+            <div class="content">
+                <h3>${title}</h3>
+            </div>
+            <div class="qr-container">
+                <div id="${cardId}"></div>
+            </div>
+            <a href="${fileUrl}" class="btn-link">開啟網頁</a>
+        `;
+        grid.appendChild(card);
+
+        // 生成 QR Code
+        new QRCode(document.getElementById(cardId), {
+            text: fileUrl,
+            width: 120,
+            height: 120,
+            colorDark : "#1e293b",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
         });
+
+        // 嘗試抓取網頁縮圖 (使用 WordPress mshots 免費服務)
+        // 注意：這需要你的網站已經發佈且 GitHub Pages 已更新才看得到
+        const thumbDiv = document.getElementById(`thumb-${index}`);
+        const screenshotUrl = `https://s.wordpress.com/mshots/v1/${encodeURIComponent(fileUrl)}?w=400`;
+        thumbDiv.style.backgroundImage = `url('${screenshotUrl}')`;
     }
 
-    function handleAnswer(option, btnElement) {
-        const failFeedbackArea = document.getElementById('fail-feedback-area');
-        const successFeedbackArea = document.getElementById('success-feedback-area');
-        
-        if (option.correct) {
-            // --- 答對 ---
-            // 鎖定所有按鈕
-            const allButtons = document.querySelectorAll('#options-container button');
-            allButtons.forEach(b => b.disabled = true);
-            
-            // 標示綠色
-            btnElement.style.backgroundColor = '#d4edda';
-            btnElement.style.borderColor = '#28a745';
-            
-            // 清除之前的錯誤訊息
-            failFeedbackArea.innerHTML = '';
-
-            // 顯示成功訊息與下一關按鈕
-            successFeedbackArea.innerHTML = `<div class="feedback success">${option.feedback}<br><button style="margin-top:10px; width:auto; padding:5px 20px; font-size:1rem;" onclick="nextLevel()">下一關 ➜</button></div>`;
-            
-        } else {
-            // --- 答錯 ---
-            lives--;
-            updateLivesDisplay();
-            
-            // 鎖定「這個」錯誤按鈕 (變紅色且無法再按)
-            btnElement.disabled = true;
-            btnElement.style.backgroundColor = '#f8d7da';
-            btnElement.style.borderColor = '#dc3545';
-            btnElement.style.color = '#721c24';
-
-            if (lives <= 0) {
-                // 沒命了 -> Game Over
-                const allButtons = document.querySelectorAll('#options-container button');
-                allButtons.forEach(b => b.disabled = true);
-                setTimeout(() => {
-                    showGameOver();
-                }, 500);
-            } else {
-                // 還有命 -> 顯示提示讓玩家繼續選
-                failFeedbackArea.innerHTML = `<div class="feedback fail">錯誤！${option.reason} (生命 -1)</div>`;
-            }
-        }
-    }
-
-    function nextLevel() {
-        if (currentLevel + 1 < questions.length) {
-            loadLevel(currentLevel + 1);
-        } else {
-            showVictory();
-        }
-    }
-
-    function showGameOver() {
-        document.getElementById('game-screen').classList.remove('active');
-        document.getElementById('game-over-screen').classList.add('active');
-    }
-
-    function showVictory() {
-        document.getElementById('game-screen').classList.remove('active');
-        document.getElementById('victory-screen').classList.add('active');
-    }
+    init();
 </script>
 
 </body>
