@@ -136,12 +136,13 @@
     function createCard(file, index) {
         // 去除副檔名作為標題
         const title = file.name.replace('.html', '');
-        
-        // 取得該 HTML 的 GitHub Pages 絕對位址
-        const baseUrl = `https://${CONFIG.username}.github.io/${CONFIG.repo}/`;
-        const fileUrl = baseUrl + (CONFIG.folder ? CONFIG.folder + '/' : '') + file.name;
+		const baseUrl = `https://${CONFIG.username}.github.io/${CONFIG.repo}/`;
+		
+		// 使用 encodeURI 處理中文檔名，確保網址在 QR Code 和縮圖服務中都能運作
+		const fileNameEncoded = encodeURI(file.name);
+		const fileUrl = baseUrl + (CONFIG.folder ? CONFIG.folder + '/' : '') + fileNameEncoded;
 
-        const cardId = `qr-${index}`;
+		const cardId = `qr-${index}`;
 
         // 建立卡片元件
         const card = document.createElement('div');
