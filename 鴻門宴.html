@@ -44,6 +44,7 @@
             position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
             border: 1px solid #3d3d3d;
+            overflow: hidden;
         }
 
         #status-bar {
@@ -125,7 +126,7 @@
             flex-direction: column;
             gap: 10px;
             border-top: 1px solid #3d3d3d;
-            flex-shrink: 0; /* 確保按鈕區域絕對不會被擠壓變形 */
+            flex-shrink: 0; /* 確保按鈕區域絕對不會被擠壓變形或推到畫面外 */
         }
 
         .btn {
@@ -188,14 +189,14 @@
             font-size: 16px;
         }
 
-        /* === [自適應優化] 座位排陣容器佈局 === */
+        /* === [自適應優化] 座位排陣容器佈局（維持上到下順序） === */
         #seating-level-container {
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* 自動均勻分配剩餘高度，消除死白 */
+            justify-content: flex-start; /* 保持由上到下的天然堆疊 */
             width: 100%;
             height: 100%;
-            gap: 10px;
+            gap: 12px; /* 緊湊組件間距 */
         }
 
         #character-source-zone {
@@ -205,7 +206,7 @@
             background: #1a1a1a;
             border: 1px solid #3d3d3d;
             border-radius: 8px;
-            min-height: 68px; 
+            min-height: 64px; 
             flex-shrink: 0;
         }
 
@@ -231,7 +232,7 @@
         }
 
         .char-avatar {
-            font-size: 28px;
+            font-size: 24px; /* 微調 Emoji 大小 */
         }
 
         .char-name {
@@ -239,23 +240,22 @@
             color: #aaa;
         }
 
-        /* 縮小網格大小以完美適應小螢幕，並讓它隨高度彈性伸縮 */
+        /* 動態彈性收縮網格，防止把下方按鈕往下推 */
         #seating-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 8px;
             width: 100%;
-            max-width: 280px;
-            height: 40vh; /* 使用螢幕比例高度 */
-            max-height: 230px;
+            max-width: 270px;
+            height: min(270px, 40vh); 
             margin: 0 auto;
             border: 2px dashed #555;
             padding: 8px;
             background: #222;
             border-radius: 8px;
             position: relative;
-            flex-grow: 1; /* 允許在上下空間足夠時適度延伸 */
+            flex-shrink: 0; /* 禁止擠壓 */
         }
 
         .seat-slot {
@@ -266,7 +266,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #aaa;
             position: relative;
             transition: background-color 0.2s;
@@ -294,7 +294,7 @@
             align-items: center;
         }
 
-        .seat-slot.occupied .char-avatar { font-size: 22px; }
+        .seat-slot.occupied .char-avatar { font-size: 20px; }
         .seat-slot.occupied .char-name { font-size: 11px; color: #fff; }
 
         .seat-center {
@@ -498,7 +498,7 @@
         },
         end_xiang_win1: {
             title: "【項羽線 幻之結局：楚霸王中原】", avatar: "🏆",
-            text: "你拋棄了所謂的「婦人之仁」與「光明磊落」，與項莊聯手將劉邦斬於案前！范增狂喜。你成功消滅了最大的宿敵，歷史在此改寫！",
+            text: "你拋棄了所謂的「婦人之仁']與「光明磊落」，與項莊聯手將劉邦斬於案前！范增狂喜。你成功消滅了最大的宿敵，歷史在此改寫！",
             options: [{ text: "重新選擇陣營", next: "choose_faction" }]
         },
         game_final_summary: {
