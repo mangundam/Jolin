@@ -47,12 +47,13 @@
         }
 
         #status-bar {
-            padding: 15px;
+            padding: 12px 15px;
             background-color: #111;
             display: flex;
             justify-content: space-between;
             font-size: 14px;
             border-bottom: 2px solid var(--accent-gold);
+            flex-shrink: 0;
         }
 
         .stat {
@@ -81,52 +82,55 @@
 
         #stage-area {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* 嚴格禁止全域滾動 */
         }
 
         #chapter-title {
             font-size: 18px;
             color: var(--accent-gold);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: bold;
             letter-spacing: 2px;
+            flex-shrink: 0;
         }
 
         #character-avatar {
-            font-size: 64px;
-            margin: 15px 0;
+            font-size: 56px;
+            margin: 10px 0;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            flex-shrink: 0;
         }
 
         #story-text {
             font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            padding: 0 10px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            padding: 0 5px;
             word-wrap: break-word;
-            overflow-y: auto;
+            overflow-y: auto; /* 僅允許純文字溢出時上下滾動 */
             flex: 1;
         }
 
         #action-area {
-            padding: 20px;
+            padding: 15px;
             background-color: #1a1a1a;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             border-top: 1px solid #3d3d3d;
+            flex-shrink: 0; /* 確保按鈕區域絕對不會被擠壓變形 */
         }
 
         .btn {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             font-size: 16px;
             font-weight: bold;
             color: #fff;
@@ -184,32 +188,34 @@
             font-size: 16px;
         }
 
-        /* === 座位排陣樣式 === */
+        /* === [自適應優化] 座位排陣容器佈局 === */
         #seating-level-container {
             display: flex;
             flex-direction: column;
+            justify-content: space-between; /* 自動均勻分配剩餘高度，消除死白 */
             width: 100%;
             height: 100%;
-            gap: 15px;
+            gap: 10px;
         }
 
         #character-source-zone {
             display: flex;
             justify-content: space-around;
-            padding: 10px;
+            padding: 8px;
             background: #1a1a1a;
             border: 1px solid #3d3d3d;
             border-radius: 8px;
-            min-height: 72px; /* 確保隱藏時高度不塌陷 */
+            min-height: 68px; 
+            flex-shrink: 0;
         }
 
         .draggable-character {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
             cursor: grab;
-            padding: 5px;
+            padding: 4px;
             border: 2px solid transparent;
             border-radius: 4px;
             transition: opacity 0.2s, transform 0.1s;
@@ -219,14 +225,13 @@
             cursor: grabbing;
         }
 
-        /* 當角色被安置到座位上時，上方來源區隱藏 */
         .draggable-character.placed {
             visibility: hidden;
             pointer-events: none;
         }
 
         .char-avatar {
-            font-size: 32px;
+            font-size: 28px;
         }
 
         .char-name {
@@ -234,19 +239,23 @@
             color: #aaa;
         }
 
+        /* 縮小網格大小以完美適應小螢幕，並讓它隨高度彈性伸縮 */
         #seating-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 10px;
-            width: 280px;
-            height: 240px;
-            margin: 10px auto;
+            gap: 8px;
+            width: 100%;
+            max-width: 280px;
+            height: 40vh; /* 使用螢幕比例高度 */
+            max-height: 230px;
+            margin: 0 auto;
             border: 2px dashed #555;
-            padding: 10px;
+            padding: 8px;
             background: #222;
             border-radius: 8px;
             position: relative;
+            flex-grow: 1; /* 允許在上下空間足夠時適度延伸 */
         }
 
         .seat-slot {
@@ -272,7 +281,7 @@
             color: #fff;
             font-weight: bold;
             border-style: solid;
-            cursor: grab; /* 讓座位上的角色也可以被拖移 */
+            cursor: grab;
         }
 
         .seat-slot.occupied:active {
@@ -285,8 +294,8 @@
             align-items: center;
         }
 
-        .seat-slot.occupied .char-avatar { font-size: 24px; }
-        .seat-slot.occupied .char-name { font-size: 12px; color: #fff; }
+        .seat-slot.occupied .char-avatar { font-size: 22px; }
+        .seat-slot.occupied .char-name { font-size: 11px; color: #fff; }
 
         .seat-center {
             background-color: #333;
@@ -294,7 +303,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--accent-gold);
             font-weight: bold;
         }
@@ -343,12 +352,7 @@
         stat1: 50,
         stat2: 50,
         currentStep: "intro_1",
-        seats: {
-            west: null,  
-            north: null, 
-            south: null, 
-            east: null   
-        }
+        seats: { west: null, north: null, south: null, east: null }
     };
 
     const allCharacters = [
@@ -384,7 +388,7 @@
         intro_1: {
             title: "歷史前言：懷王之約",
             avatar: "📜",
-            text: "當初楚懷王與諸將約定：「先破秦入咸陽者王之。」人人人以為項羽會拿第一，沒想到劉邦卻抄小路先一步入主關中，甚至派兵把守函谷關，企圖封鎖關中！",
+            text: "當初楚懷王與諸將約定：「先破秦入咸陽者王之。」人人都以為項羽會拿第一，沒想到劉邦卻抄小路先一步入主關中，甚至派兵把守函谷關，企圖封鎖關中！",
             options: [{ text: "繼續閱讀歷史背景", next: "intro_2" }]
         },
         intro_2: {
@@ -444,7 +448,7 @@
         seating_game: {
             title: "【考驗】鴻門宴座次陣法",
             avatar: "📐",
-            text: "古代室內座次尊卑嚴格：『項王、項伯東向坐；亞父南向坐；沛公北向坐；張良西向侍。』請拖移上方的角色，將他們排定到正確的座位上！(可任意拖移交換或拉出重置)",
+            text: "古代室內座次尊卑嚴格：『項王、項伯東向坐；亞父南向坐；沛公北向坐；張良西向侍。』請拖移角色到正確座位上！(可直接對調或拖出重置)",
             isSeatingLevel: true
         },
         hongmen_climax: {
@@ -570,8 +574,7 @@
         });
     }
 
-    // ==================== [核心修改] 進階拖移交換與隱忍邏輯 ====================
-    let dragSourceInfo = null; // 用於儲存拖移來源 { type: 'source'|'seat', id: charId, direction: 'west'等 }
+    let dragSourceInfo = null; 
     let ghostElement = null;
     let lastDragOverSlot = null;
 
@@ -582,12 +585,10 @@
         const seatingContainer = document.createElement('div');
         seatingContainer.id = "seating-level-container";
 
-        // 1. 來源區
         const sourceZone = document.createElement('div');
         sourceZone.id = "character-source-zone";
         seatingContainer.appendChild(sourceZone);
 
-        // 2. 網格區
         const grid = document.createElement('div');
         grid.id = "seating-grid";
         grid.innerHTML = `
@@ -606,10 +607,8 @@
         seatingContainer.appendChild(grid);
         stage.appendChild(seatingContainer);
 
-        // 刷新渲染角色與座位狀態
         refreshDragLayout();
 
-        // 提交按鈕
         const submitBtn = document.createElement('button');
         submitBtn.className = "btn";
         submitBtn.style.backgroundColor = "var(--accent-gold)";
@@ -624,12 +623,11 @@
         if (e.preventDefault) e.preventDefault();
     }
 
-    // 重新根據目前的 gameState.seats 繪製角色位置與上方顯示狀態
     function refreshDragLayout() {
         const sourceZone = document.getElementById('character-source-zone');
+        if(!sourceZone) return;
         sourceZone.innerHTML = "";
 
-        // 渲染上方角色
         allCharacters.forEach(char => {
             const charEl = document.createElement('div');
             charEl.className = "draggable-character";
@@ -640,35 +638,29 @@
                 <div class="char-name">${char.name}</div>
             `;
 
-            // 如果該角色已經被分配到某個座位，則在上方區「隱藏」
             const isPlaced = Object.values(gameState.seats).includes(char.id);
             if (isPlaced) {
                 charEl.classList.add('placed');
             } else {
-                // 只有沒被放下去的角色才可以從上方拖移
                 bindDragEvents(charEl, { type: 'source', id: char.id });
             }
-
             sourceZone.appendChild(charEl);
         });
 
-        // 渲染座位網格
         const grid = document.getElementById('seating-grid');
+        if(!grid) return;
         grid.querySelectorAll('.drop-target').forEach(slot => {
             const dir = slot.dataset.direction;
             const charId = gameState.seats[dir];
             const contentZone = slot.querySelector('.drop-slot-content');
             
-            // 重置樣式
             slot.classList.remove('occupied');
             slot.removeAttribute('draggable');
             contentZone.innerHTML = "";
 
-            // 解綁之前的事件，避免重複
             const newSlot = slot.cloneNode(true);
             slot.parentNode.replaceChild(newSlot, slot);
 
-            // PC 端的目標接收事件
             newSlot.addEventListener('dragover', (e) => { e.preventDefault(); newSlot.classList.add('drag-over'); });
             newSlot.addEventListener('dragleave', () => newSlot.classList.remove('drag-over'));
             newSlot.addEventListener('drop', (e) => {
@@ -685,12 +677,10 @@
                     <div class="char-avatar">${charData.emoji}</div>
                     <div class="char-name">${charData.name}</div>
                 `;
-                // 座位上有人的話，此座位可以再度被拖移出去
                 bindDragEvents(newSlot, { type: 'seat', id: charId, direction: dir });
             }
         });
 
-        // 允許將座位上的人拖回到「上方來源區」釋放
         sourceZone.addEventListener('dragover', (e) => e.preventDefault());
         sourceZone.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -700,9 +690,7 @@
         });
     }
 
-    // 統一綁定 PC 拖移與手機觸控事件
     function bindDragEvents(element, sourceInfo) {
-        // --- PC 端 ---
         element.addEventListener('dragstart', (e) => {
             dragSourceInfo = sourceInfo;
             element.style.opacity = '0.4';
@@ -712,7 +700,6 @@
             element.style.opacity = '1';
         });
 
-        // --- 手機觸控端 (防滑動偏移) ---
         element.addEventListener('touchstart', (e) => {
             dragSourceInfo = sourceInfo;
             element.style.opacity = '0.4';
@@ -723,7 +710,6 @@
             ghostElement.style.opacity = "0.7";
             ghostElement.style.pointerEvents = "none";
             ghostElement.style.zIndex = "1000";
-            // 修正克隆座位時的大小
             ghostElement.style.width = element.offsetWidth + "px";
             ghostElement.style.height = element.offsetHeight + "px";
             document.body.appendChild(ghostElement);
@@ -741,7 +727,6 @@
             ghostElement.style.visibility = 'visible';
 
             const currentSlot = targetUnderTouch ? targetUnderTouch.closest('.drop-target') : null;
-            const currentSourceZone = targetUnderTouch ? targetUnderTouch.closest('#character-source-zone') : null;
 
             if (lastDragOverSlot && lastDragOverSlot !== currentSlot) {
                 lastDragOverSlot.classList.remove('drag-over');
@@ -768,7 +753,6 @@
                 targetSlot.classList.remove('drag-over');
                 executeMoveAction(dragSourceInfo, { type: 'seat', direction: targetSlot.dataset.direction });
             } else if (targetSourceZone || isOutsideGrid(touch)) {
-                // 如果拖回上方來源區，或放開在座位網格之外，則判定為「拿回上方」
                 executeMoveAction(dragSourceInfo, { type: 'source' });
             }
 
@@ -789,53 +773,39 @@
 
     function isOutsideGrid(touch) {
         const grid = document.getElementById('seating-grid');
+        if(!grid) return true;
         const rect = grid.getBoundingClientRect();
         return (touch.clientX < rect.left || touch.clientX > rect.right || touch.clientY < rect.top || touch.clientY > rect.bottom);
     }
 
-    //核心：執行移動、對調邏輯
     function executeMoveAction(source, target) {
-		if (dragSourceInfo) {
-			// 尋找當前正在被拖移的 DOM 元素並恢復其透明度
-			let sourceEl = null;
-			if (source.type === 'source') {
-				sourceEl = document.querySelector(`.draggable-character[data-char-id="${source.id}"]`);
-			} else if (source.type === 'seat') {
-				sourceEl = document.querySelector(`.drop-target[data-direction="${source.direction}"]`);
-			}
-			if (sourceEl) sourceEl.style.opacity = '1';
-		}
-	
-        // 情況 1：從某處移到【上方來源區】 (意即釋放、清除座位)
+        if (dragSourceInfo) {
+            let sourceEl = null;
+            if (source.type === 'source') {
+                sourceEl = document.querySelector(`.draggable-character[data-char-id="${source.id}"]`);
+            } else if (source.type === 'seat') {
+                sourceEl = document.querySelector(`.drop-target[data-direction="${source.direction}"]`);
+            }
+            if (sourceEl) sourceEl.style.opacity = '1';
+        }
+
         if (target.type === 'source') {
             if (source.type === 'seat') {
                 gameState.seats[source.direction] = null;
             }
         }
-        
-        // 情況 2：移到某個【座位】
         else if (target.type === 'seat') {
-            const occupantId = gameState.seats[target.direction]; // 目標位置目前的人
+            const occupantId = gameState.seats[target.direction];
 
             if (source.type === 'source') {
-                // A. 從上方拖到座位
-                if (occupantId) {
-                    // 目標座位有人 ->「對調」，原本的人會回到上方 (因為上方原本放 source.id 的現在空出來了)
-                    gameState.seats[target.direction] = source.id;
-                } else {
-                    // 目標座位沒人 -> 直接放入
-                    gameState.seats[target.direction] = source.id;
-                }
+                gameState.seats[target.direction] = source.id;
             } 
             else if (source.type === 'seat') {
-                // B. 從座位A 拖到 座位B
                 if (source.direction !== target.direction) {
                     if (occupantId) {
-                        // 兩個座位都有人 ->「位置互換」
                         gameState.seats[source.direction] = occupantId;
                         gameState.seats[target.direction] = source.id;
                     } else {
-                        // 目標座位沒人 -> 原座位清空，新座位放入
                         gameState.seats[source.direction] = null;
                         gameState.seats[target.direction] = source.id;
                     }
@@ -843,11 +813,9 @@
             }
         }
 
-        // 重新繪製畫面與事件綁定
         refreshDragLayout();
     }
 
-    // 驗證答案
     function checkSeatingDragAnswer() {
         const s = gameState.seats;
         if (s.west === "xiangyu_xiangbo" && s.north === "亞父范增" && s.south === "沛公劉邦" && s.east === "張良") {
